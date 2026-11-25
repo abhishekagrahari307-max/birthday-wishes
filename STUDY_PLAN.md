@@ -80,7 +80,7 @@ Each block ≈ 1 h 45 m video + 20–30 m notes + 15 m recall.
 2. **Notes in your own words** — the PDFs are summaries; rewrite each as 5 bullet points max.
 3. **One command per day** — from L9's grep/awk/sed/bash list, type it for real.
 4. **Flag & move on** — mark anything you didn't understand; clear flags in the doubt class.
-5. **Track progress** in `index.html` (the companion tracker) — checkboxes persist in your browser.
+5. **Track progress** in `tracker.html` (the companion tracker) — checkboxes persist in your browser.
 
 ## Practice platforms referenced in the course
 

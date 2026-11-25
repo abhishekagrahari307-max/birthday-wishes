@@ -1,354 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cyber Security with AI — Study Tracker</title>
-<style>
-  :root {
-    --bg: #0d1117; --panel: #161b22; --panel2: #1c2333; --border: #30363d;
-    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --green: #3fb950;
-    --amber: #d29922; --red: #f85149; --purple: #bc8cff;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.5; padding-bottom: 60px;
-  }
-  header {
-    background: linear-gradient(135deg, #161b22 0%, #1a2333 60%, #16243a 100%);
-    border-bottom: 1px solid var(--border); padding: 28px 20px 22px;
-  }
-  .wrap { max-width: 980px; margin: 0 auto; }
-  .crumbs { color: var(--muted); font-size: 12.5px; margin-bottom: 8px; }
-  .crumbs a { color: var(--accent); text-decoration: none; }
-  h1 { font-size: 26px; letter-spacing: -0.3px; }
-  h1 .ai { color: var(--purple); }
-  .sub { color: var(--muted); font-size: 14px; margin-top: 6px; }
-  .sub b { color: var(--text); font-weight: 600; }
-
-  .stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-  .stat {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-    padding: 10px 14px; min-width: 108px;
-  }
-  .stat .v { font-size: 20px; font-weight: 700; }
-  .stat .k { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-  .stat.ok .v { color: var(--green); }
-  .stat.none .v { color: var(--amber); }
-
-  .progress-block { margin-top: 18px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
-  .progress-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-bottom: 8px; }
-  .progress-row .pct { font-weight: 700; color: var(--accent); }
-  .bar { height: 10px; background: var(--panel2); border-radius: 6px; overflow: hidden; }
-  .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg, #238636, #3fb950); border-radius: 6px; transition: width .35s ease; }
-
-  nav.tabs { display: flex; gap: 6px; padding: 16px 0 4px; flex-wrap: wrap; }
-  nav.tabs button {
-    background: var(--panel); color: var(--muted); border: 1px solid var(--border);
-    padding: 8px 16px; border-radius: 999px; font-size: 14px; cursor: pointer;
-  }
-  nav.tabs button.active { background: #1f6feb; border-color: #1f6feb; color: #fff; font-weight: 600; }
-
-  section.tab { display: none; margin-top: 14px; }
-  section.tab.active { display: block; }
-
-  .card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    padding: 16px; margin-bottom: 12px;
-  }
-  .lec { display: flex; gap: 14px; align-items: flex-start; }
-  .lec input[type=checkbox] { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
-  .lec .body { flex: 1; min-width: 0; }
-  .lec .row1 { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-  .num { background: var(--panel2); border: 1px solid var(--border); color: var(--accent); font-size: 12px; font-weight: 700; padding: 1px 9px; border-radius: 999px; }
-  .date { color: var(--muted); font-size: 12.5px; }
-  .dur { color: var(--amber); font-size: 12.5px; font-variant-numeric: tabular-nums; }
-  .free { color: var(--green); font-size: 11.5px; border: 1px solid var(--green); border-radius: 999px; padding: 0 8px; }
-  .lec h3 { font-size: 15.5px; margin: 6px 0 4px; }
-  .lec p { color: var(--muted); font-size: 13px; }
-  .links { margin-top: 9px; display: flex; gap: 8px; flex-wrap: wrap; }
-  .links a, .links span.tag {
-    font-size: 12.5px; text-decoration: none; padding: 4px 11px; border-radius: 7px; border: 1px solid var(--border);
-    background: var(--panel2); color: var(--accent);
-  }
-  .links a:hover { border-color: var(--accent); }
-  .links a.pdf { color: var(--green); }
-  .links a.pdf.pending { color: var(--muted); cursor: not-allowed; }
-  .done-ghost h3 { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
-
-  .empty {
-    text-align: center; padding: 40px 20px; color: var(--muted);
-    background: var(--panel); border: 1px dashed var(--border); border-radius: 12px;
-  }
-  .empty .big { font-size: 40px; margin-bottom: 10px; }
-  .empty b { color: var(--text); }
-
-  .note-row { display: flex; gap: 12px; align-items: center; }
-  .note-row .file { font-family: ui-monospace, monospace; font-size: 13px; color: var(--text); word-break: break-all; }
-  .note-row .meta { color: var(--muted); font-size: 12.5px; }
-  .badge { font-size: 11px; padding: 2px 9px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
-  .badge.y { background: rgba(63,185,80,.15); color: var(--green); border: 1px solid rgba(63,185,80,.4); }
-  .badge.n { background: rgba(210,153,34,.12); color: var(--amber); border: 1px solid rgba(210,153,34,.4); }
-
-  .plan ol { list-style: none; counter-reset: w; }
-  .plan li {
-    counter-increment: w; position: relative; padding: 14px 16px 14px 58px;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px;
-  }
-  .plan li::before {
-    content: "W" counter(w); position: absolute; left: 14px; top: 14px;
-    background: #1f6feb; color: #fff; font-weight: 700; font-size: 13px;
-    width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
-  }
-  .plan li h4 { font-size: 15px; margin-bottom: 4px; }
-  .plan li p { color: var(--muted); font-size: 13.5px; }
-  .plan li p b { color: var(--text); }
-
-  .habits { margin-top: 16px; }
-  .habits li { list-style: none; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--muted); }
-  .habits li b { color: var(--text); }
-  .habits li::before { content: "◆ "; color: var(--purple); }
-
-  footer { margin-top: 28px; color: var(--muted); font-size: 12.5px; text-align: center; }
-  footer a { color: var(--accent); text-decoration: none; }
-
-  .reset { background: none; border: 1px solid var(--border); color: var(--muted); font-size: 12px; padding: 4px 12px; border-radius: 7px; cursor: pointer; margin-top: 10px; }
-  .reset:hover { color: var(--red); border-color: var(--red); }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecture with Batch — browse batches, subjects & lectures</title>
+  <meta name="description" content="Pick a batch, open its subjects, chapters and lectures — with watch links and notes.">
+  <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
-
-<header>
-  <div class="wrap">
-    <div class="crumbs">
-      <a href="https://stream.aryavidya.cc/#/batch/6ab37be92255bff4a44998b2?tab=subjects">Hacking &amp; Cyber Security - Earners</a>
-      &nbsp;›&nbsp; Cyber Security &nbsp;›&nbsp; Topic 1
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html"><span class="logo">🎓</span> Lecture with Batch</a>
+      <nav class="site-nav">
+        <a href="index.html" class="active">Batches</a>
+        <a href="tracker.html">Topic Tracker</a>
+      </nav>
     </div>
-    <h1>Cyber Security <span class="ai">with AI</span></h1>
-    <div class="sub">
-      Trainer <b>Rishabh Kumar Pandey</b> · Hinglish · Class 12+ ·
-      <a href="https://stream.aryavidya.cc/#/batch/6ab37be92255bff4a44998b2/subject/6ad1d6c915a81893a94cdf26/topic/6ad5f346ffb303955249816c/cyber-security-with-ai-979004" style="color:var(--accent);text-decoration:none">open on AryaVidya ↗</a>
-    </div>
+  </header>
 
-    <div class="stats">
-      <div class="stat ok"><div class="v">10</div><div class="k">Lectures</div></div>
-      <div class="stat ok"><div class="v">11h 50m</div><div class="k">Video</div></div>
-      <div class="stat ok"><div class="v">8</div><div class="k">Note PDFs</div></div>
-      <div class="stat none"><div class="v">0</div><div class="k">DPP PDFs</div></div>
-      <div class="stat none"><div class="v">0</div><div class="k">DPP Videos</div></div>
-      <div class="stat none"><div class="v">0</div><div class="k">Quizzes</div></div>
-    </div>
-
-    <div class="progress-block">
-      <div class="progress-row">
-        <span>Your progress — lectures watched</span>
-        <span class="pct" id="pct">0 / 10 · 0%</span>
+  <main class="wrap">
+    <section class="hero">
+      <h1><span class="grad">Lectures, organized by batch</span></h1>
+      <p>Search any batch → open its subjects → chapters → lectures with durations, dates,
+         watch links and PDF notes. Works offline for your saved batches, live for everything else.</p>
+      <div class="searchbox">
+        <span class="icon">🔍</span>
+        <input id="search" type="search" placeholder="Search batches… e.g. Lakshya JEE, Yakeen, Cyber Security" autocomplete="off">
       </div>
-      <div class="bar"><div id="bar"></div></div>
-      <button class="reset" id="reset">Reset progress</button>
-    </div>
+    </section>
 
-    <nav class="tabs">
-      <button class="active" data-tab="lectures">🎬 Lectures</button>
-      <button data-tab="notes">📄 Notes (8)</button>
-      <button data-tab="resources">🧪 DPP &amp; Quizzes</button>
-      <button data-tab="plan">📅 Study Plan</button>
-    </nav>
-  </div>
-</header>
+    <div class="chips" id="chips"></div>
 
-<div class="wrap">
-
-  <!-- LECTURES -->
-  <section class="tab active" id="tab-lectures"></section>
-
-  <!-- NOTES -->
-  <section class="tab" id="tab-notes"></section>
-
-  <!-- RESOURCES -->
-  <section class="tab" id="tab-resources">
-    <div class="empty">
-      <div class="big">🧪</div>
-      <p><b>No DPP PDFs, DPP videos, quizzes or tests published yet</b> for this topic.</p>
-      <p style="margin-top:8px">Upstream counts: <b>notes = 8</b>, <b>exercises = 0</b>, <b>videos = 10</b>.
-      The batch also has no test categories attached.</p>
-      <p style="margin-top:14px">They'll show up in the
-        <a href="https://stream.aryavidya.cc/#/batch/6ab37be92255bff4a44998b2/subject/6ad1d6c915a81893a94cdf26/topic/6ad5f346ffb303955249816c/cyber-security-with-ai-979004" style="color:var(--accent)">topic page tabs</a>
-        once the instructor uploads them — check weekly, or watch the batch announcements.</p>
-    </div>
-  </section>
-
-  <!-- PLAN -->
-  <section class="tab plan" id="tab-plan">
-    <div class="card">
-      <h3 style="margin-bottom:10px">📅 4-week plan <span style="color:var(--muted);font-weight:400;font-size:13px">(start Mon 30 Nov 2026 · 1 lecture + notes per day, 6 days/week)</span></h3>
-      <ol>
-        <li><h4>Week 1 — Foundations &amp; Law · Lectures 1–3</h4>
-          <p><b>Mon</b> L1 course map, CIA triad, risk, careers → <b>Tue</b> L2 ethics, IT Act, DPDP, CERT-In → <b>Wed</b> L3 doubt class → <b>Thu</b> notes 1–3 + flashcards → <b>Fri</b> TryHackMe first 2 rooms → <b>Sat</b> buffer → <b>Sun</b> 30 m teach-back.</p></li>
-        <li><h4>Week 2 — Networking Core · Lectures 4–5</h4>
-          <p><b>Mon</b> L4 packets, OSI/TCP-IP, ports → <b>Tue</b> L5 DNS, HTTP vs HTTPS, TLS → <b>Wed</b> lab: <code>dig</code>, <code>curl -v</code>, Wireshark handshake → <b>Thu</b> notes 4–5 + TCP-vs-UDP cheat sheet → <b>Fri</b> write 5 doubt questions → <b>Sat</b> buffer → <b>Sun</b> explain DNS chain in &lt;2 min.</p></li>
-        <li><h4>Week 3 — Web &amp; Kali · Lectures 6–8</h4>
-          <p><b>Mon</b> L6 doubt class → <b>Tue</b> L7 web fundamentals: authN/authZ, cookies, SOP, CORS → <b>Wed</b> L8 Kali install + snapshot → <b>Thu</b> PortSwigger Discovery + Authentication labs → <b>Fri</b> notes 6–8 flashcards → <b>Sat</b> buffer → <b>Sun</b> name a Kali tool per category.</p></li>
-        <li><h4>Week 4 — Linux &amp; Consolidation · Lectures 9–10 + revision</h4>
-          <p><b>Mon</b> L9 Linux essentials → OverTheWire Bandit 1–10 → <b>Tue</b> L10 doubt class → <b>Wed</b> Linux Journey + Bandit 11+ → <b>Thu</b> full revision of all 8 PDFs → <b>Fri</b> closed-book self-test (≥80%) → <b>Sat</b> buffer → <b>Sun</b> plan the next topic.</p></li>
-      </ol>
-    </div>
-    <div class="card habits">
-      <h3 style="margin-bottom:6px">Standing habits</h3>
-      <ul>
-        <li><b>2-min warm-up</b> — recall yesterday's 3 key terms before starting.</li>
-        <li><b>Notes in your own words</b> — rewrite each PDF as ≤5 bullet points.</li>
-        <li><b>One command per day</b> — from L9's grep/awk/sed/bash list, type it for real.</li>
-        <li><b>Flag &amp; move on</b> — mark anything unclear; clear flags in Monday's doubt class.</li>
-        <li><b>Track here</b> — your checkboxes save automatically in this browser.</li>
-      </ul>
-      <p style="margin-top:12px;color:var(--muted);font-size:13px">
-        Full day-by-day table with "done when" criteria: see <a href="STUDY_PLAN.md" style="color:var(--accent)">STUDY_PLAN.md</a>.
-      </p>
-    </div>
-    <div class="card">
-      <h3 style="margin-bottom:8px">🛠 Practice platforms from the course</h3>
-      <div class="links">
-        <a href="https://tryhackme.com/" target="_blank" rel="noopener">TryHackMe (THM)</a>
-        <a href="https://www.hackthebox.com/" target="_blank" rel="noopener">Hack The Box (HTB)</a>
-        <a href="https://portswigger.net/web-security" target="_blank" rel="noopener">PortSwigger Academy</a>
-        <a href="https://overthewire.org/wargames/bandit/" target="_blank" rel="noopener">OverTheWire: Bandit</a>
-        <a href="https://linuxjourney.com/" target="_blank" rel="noopener">Linux Journey</a>
+    <section id="gridSection">
+      <div class="grid" id="grid">
+        <div class="state" style="grid-column:1/-1"><span class="spin"></span>Loading batches…</div>
       </div>
-      <p style="margin-top:10px;color:var(--muted);font-size:13px">Books mentioned in L9: <b>Linux Basics for Hackers</b> · <b>The Linux Command Line</b></p>
-    </div>
-  </section>
+      <div class="center">
+        <button class="btn ghost" id="loadMore">Load more batches</button>
+      </div>
+    </section>
 
-  <footer>
-    Extracted 25 Nov 2026 from the AryaVidya topic page · data in <a href="data/course-data.json">data/course-data.json</a> ·
-    progress stored locally in your browser
+    <section id="searchSection">
+      <div class="section-title" id="resultsTitle" hidden></div>
+      <div class="results" id="results" hidden></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    Data is fetched at runtime from open PW-compatible mirrors with an offline seed fallback ·
+    <a href="tracker.html">Cyber Security topic tracker</a>
   </footer>
-</div>
 
-<script>
-const BASE = "https://stream.aryavidya.cc/play.php";
-const TOPIC = "https://stream.aryavidya.cc/#/batch/6ab37be92255bff4a44998b2/subject/6ad1d6c915a81893a94cdf26/topic/6ad5f346ffb303955249816c/cyber-security-with-ai-979004";
-
-const LECTURES = [
-  {n:1,date:"24 Oct 2026",title:"Welcome: Course Map and Career Paths",desc:"Course structure and weekly rhythm; cyber security landscape; CIA triad; risk, likelihood × impact; job roles and career paths; certification ladder; free vs paid platforms (THM/HTB/PortSwigger)",dur:"1:10:01",vid:"6adca1f68f27c050e7c6a858",free:true,yt:"IEIxu1NHmBM",poster:"https://i.ytimg.com/vi/IEIxu1NHmBM/mqdefault.jpg",note:"Lecture_1_Cyber_Security_Foundations.pdf",noteUrl:"https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/5a75627f-84c7-47fa-9144-1c75ff193dde.pdf"},
-  {n:2,date:"25 Oct 2026",title:"Ethics, Cyber Law and How to Learn",desc:"White/grey/black hat; authorization and scope; IT Act 2000 and DPDP; CERT-In and responsible disclosure; study method and structured note-taking",dur:"01:09:44",vid:"6ad5f3472474d6fcc5994438",free:false,poster:"https://static.pw.live/5eb393ee95fab7468a79d189/image/2e645981-efba-43d2-ade2-327cb420ba9c.png",note:"Lecture_2_Hackers_Hats_and_the_Law.pdf",noteUrl:null},
-  {n:3,date:"26 Oct 2026",title:"Problem Solving || Doubt Class",desc:"Doubt-clearing and problem-solving session",dur:"01:14:36",vid:"6ad5f3472474d6fcc5994458",free:false,poster:"https://static.pw.live/5eb393ee95fab7468a79d189/image/8846116c-73e4-452c-88e1-a580011e5a11.png",note:"Lecture_3_Problem_Solving.pdf",noteUrl:null},
-  {n:4,date:"31 Oct 2026",title:"Data, Packets and the OSI Model plus Doubt class",desc:"Data and packets; encapsulation; OSI and TCP/IP models; ports; TCP vs UDP (Wireshark)",dur:"01:09:48",vid:"6ad5f3482474d6fcc5994485",free:false,poster:"https://static.pw.live/5eb393ee95fab7468a79d189/image/729815de-ab28-486a-b982-11fab39e7ba3.png",note:"Cyber Security Lecture 04 - Summary Notes By Rishabh Sir.pdf",noteUrl:null},
-  {n:5,date:"1 Nov 2026",title:"DNS, HTTP vs HTTPS and TLS",desc:"DNS records and resolution; HTTP vs HTTPS; TCP handshake; TLS handshake; certificates (dig, curl, Wireshark)",dur:"01:09:20",vid:"6ad5f3482474d6fcc59944b4",free:false,poster:"https://static.pw.live/5eb393ee95fab7468a79d189/image/def309a8-fdf2-4309-a622-36202a944bb4.png",note:"Cyber Security Lecture 05 - Summary Notes By Rishabh Sir.pdf",noteUrl:null},
-  {n:6,date:"2 Nov 2026",title:"Problem Solving || Doubt Class",desc:"Doubt-clearing and problem-solving session",dur:"01:15:56",vid:"6ad5f3482474d6fcc59944ed",free:false,poster:"https://static.pw.live/5eb393ee95fab7468a79d189/image/3205ff10-e435-4bff-8e86-0307e3e9bb90.png",note:"Cyber Security Lecture 06 - Summary Notes By Rishabh Sir.pdf",noteUrl:null},
-  {n:7,date:"14 Nov 2026",title:"Web Fundamentals",desc:"Client-server; app architecture (thick/thin client, tiers); authN vs authZ; cookies and attributes (HttpOnly/Secure/SameSite); Same-Origin Policy and CORS",dur:"01:07:16",vid:"6ad5f3482474d6fcc599450b",free:false,poster:"https://static.pw.live/5eb393ee95fab7468a79d189/image/05c7ce6d-b310-42c4-81d0-389b1c1ae2b9.png",note:"Lecture_7_Inside_a_Web_App.pptx.pdf",noteUrl:null},
-  {n:8,date:"21 Nov 2026",title:"Kali Linux Install and Tools Overview Doubt Class",desc:"OS and virtualization basics; Kali install, update and snapshot; VM networking; Kali tool-category tour (info gathering, scanning, web, exploitation, password, wireless)",dur:"01:17:56",vid:"6ad5f3482474d6fcc5994522",free:false,poster:"https://static.pw.live/5eb393ee95fab7468a79d189/image/b62009e5-aca4-4bbe-a45d-549c9f3caff6.png",note:"Lecture_8 and 9_Ports_IPs_and_the_Web.pdf",noteUrl:null},
-  {n:9,date:"22 Nov 2026",title:"Linux Essentials for Hackers (Practice and Books)",desc:"Filesystem, files, permissions, users; processes, services, logs; grep/awk/sed & basic bash; practice: OverTheWire Bandit, Linux Journey, THM; books: Linux Basics for Hackers, The Linux Command Line",dur:"01:05:28",vid:"6ad5f3492474d6fcc5994543",free:false,poster:"https://static.pw.live/5eb393ee95fab7468a79d189/image/5969d1cc-6074-422e-9529-e0a3d53b4c23.png",note:"Lecture_8 and 9_Ports_IPs_and_the_Web.pdf",noteUrl:null},
-  {n:10,date:"23 Nov 2026",title:"Problem Solving || Doubt Class",desc:"Doubt-clearing and problem-solving session",dur:"01:06:28",vid:"6ad5f3492474d6fcc5994564",free:false,poster:"https://static.pw.live/5eb393ee95fab7468a79d189/image/a910471b-5beb-450f-ad00-6ec34d382d74.png",note:null,noteUrl:null}
-];
-
-const NOTES = [
-  {lec:"1", file:"Lecture_1_Cyber_Security_Foundations.pdf", date:"24 Oct 2026", url:"https://static.pw.live/5eb393ee95fab7468a79d189/ADMIN/5a75627f-84c7-47fa-9144-1c75ff193dde.pdf"},
-  {lec:"2", file:"Lecture_2_Hackers_Hats_and_the_Law.pdf", date:"25 Oct 2026", url:null},
-  {lec:"3", file:"Lecture_3_Problem_Solving.pdf", date:"26 Oct 2026", url:null},
-  {lec:"4", file:"Cyber Security Lecture 04 - Summary Notes By Rishabh Sir.pdf", date:"31 Oct 2026", url:null},
-  {lec:"5", file:"Cyber Security Lecture 05 - Summary Notes By Rishabh Sir.pdf", date:"1 Nov 2026", url:null},
-  {lec:"6", file:"Cyber Security Lecture 06 - Summary Notes By Rishabh Sir.pdf", date:"2 Nov 2026", url:null},
-  {lec:"7", file:"Lecture_7_Inside_a_Web_App.pptx.pdf", date:"14 Nov 2026", url:null},
-  {lec:"8+9", file:"Lecture_8 and 9_Ports_IPs_and_the_Web.pdf", date:"22 Nov 2026", url:null}
-];
-
-function playUrl(l){
-  const p = new URLSearchParams({
-    video_url: "", title: "Cyber Security with AI " + l.n + ": " + l.title,
-    poster: l.poster || "", video_id: l.vid, batch_id: "6ab37be92255bff4a44998b2",
-    subject_id: "6ad1d6c915a81893a94cdf26", video_type: "pw",
-    subject_id_original: "6ad1d6c915a81893a94cdf26",
-    topic_id: "6ad5f346ffb303955249816c", subject_slug: "cyber-security-228956",
-    topic_slug: "cyber-security-with-ai-979004", urlType: "penpencilvdo"
-  });
-  return BASE + "?" + p.toString();
-}
-
-const KEY = "csai-topic1-progress";
-let progress = JSON.parse(localStorage.getItem(KEY) || "{}");
-
-function save(){ localStorage.setItem(KEY, JSON.stringify(progress)); updateBar(); }
-function updateBar(){
-  const done = LECTURES.filter(l => progress[l.n]).length;
-  const pct = Math.round(done / LECTURES.length * 100);
-  document.getElementById("pct").textContent = done + " / " + LECTURES.length + " · " + pct + "%";
-  document.getElementById("bar").style.width = pct + "%";
-}
-
-function renderLectures(){
-  const el = document.getElementById("tab-lectures");
-  el.innerHTML = LECTURES.map(l => {
-    const checked = progress[l.n] ? "checked" : "";
-    const ghost = progress[l.n] ? "done-ghost" : "";
-    let links = `<a href="${playUrl(l)}" target="_blank" rel="noopener">▶ Watch (${l.dur})</a>`;
-    if (l.yt) links += `<a href="https://www.youtube.com/watch?v=${l.yt}" target="_blank" rel="noopener">▶ YouTube (free)</a>`;
-    if (l.note) {
-      links += l.noteUrl
-        ? `<a class="pdf" href="${l.noteUrl}" target="_blank" rel="noopener">📄 ${l.note}</a>`
-        : `<span class="tag" title="PDF exists but direct link requires your AryaVidya session">📄 ${l.note}</span>`;
-    } else {
-      links += `<span class="tag" style="color:var(--amber)">⏳ Notes not published yet</span>`;
-    }
-    return `<div class="card lec ${ghost}">
-      <input type="checkbox" data-n="${l.n}" ${checked} aria-label="Mark lecture ${l.n} watched">
-      <div class="body">
-        <div class="row1">
-          <span class="num">L${l.n}</span>
-          <span class="date">${l.date}</span>
-          <span class="dur">⏱ ${l.dur}</span>
-          ${l.free ? '<span class="free">FREE</span>' : ''}
-        </div>
-        <h3>Cyber Security with AI ${l.n}: ${l.title}</h3>
-        <p>${l.desc}</p>
-        <div class="links">${links}</div>
-      </div>
-    </div>`;
-  }).join("");
-  el.querySelectorAll("input[type=checkbox]").forEach(cb => {
-    cb.addEventListener("change", e => {
-      progress[e.target.dataset.n] = e.target.checked;
-      if (!e.target.checked) delete progress[e.target.dataset.n];
-      save(); renderLectures();
-    });
-  });
-}
-
-function renderNotes(){
-  document.getElementById("tab-notes").innerHTML = NOTES.map(n => `
-    <div class="card note-row">
-      <span class="badge ${n.url ? "y" : "n"}">${n.url ? "PDF ready" : "via AryaVidya"}</span>
-      <div style="flex:1;min-width:0">
-        <div class="file">${n.file}</div>
-        <div class="meta">Lecture ${n.lec} · ${n.date}</div>
-      </div>
-      ${n.url
-        ? `<a class="links" style="text-decoration:none" href="${n.url}" target="_blank" rel="noopener"><span class="tag" style="color:var(--green)">⬇ Open PDF</span></a>`
-        : `<a style="text-decoration:none" href="${TOPIC}" target="_blank" rel="noopener"><span class="tag">Open in Notes tab ↗</span></a>`}
-    </div>`).join("") + `
-    <div class="card" style="color:var(--muted);font-size:13.5px">
-      ℹ️ Lecture <b style="color:var(--text)">10</b> has no summary notes yet.
-      All 8 PDFs live on the AryaVidya <b style="color:var(--text)">Notes</b> tab — direct links are only issued to your signed-in session, so only Lecture 1 (free) links straight to the file here.
-    </div>`;
-}
-
-document.querySelectorAll("nav.tabs button").forEach(b => {
-  b.addEventListener("click", () => {
-    document.querySelectorAll("nav.tabs button").forEach(x => x.classList.remove("active"));
-    document.querySelectorAll("section.tab").forEach(x => x.classList.remove("active"));
-    b.classList.add("active");
-    document.getElementById("tab-" + b.dataset.tab).classList.add("active");
-  });
-});
-
-document.getElementById("reset").addEventListener("click", () => {
-  if (confirm("Reset all lecture checkboxes?")) { progress = {}; save(); renderLectures(); }
-});
-
-renderLectures();
-renderNotes();
-updateBar();
-</script>
+  <script src="js/api.js"></script>
+  <script src="js/home.js"></script>
 </body>
 </html>
